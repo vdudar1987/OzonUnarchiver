@@ -244,6 +244,15 @@ class OzonUnarchiverApp:
         """Добавляем сообщение в очередь логов"""
         self.log_queue.put(message)
 
+    def set_progress(self, value=None, maximum=None):
+        def update_progress():
+            if value is not None:
+                self.progress.config(value=value)
+            if maximum is not None:
+                self.progress.config(maximum=maximum)
+
+        self.root.after(0, update_progress)
+
     def select_file(self):
         path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
         if path:
@@ -300,7 +309,7 @@ class OzonUnarchiverApp:
 
     def process(self, account):
         try:
-            self.progress['value'] = 0
+            self.set_progress(value=0)
             self.log("=== НАЧАЛО ОБРАБОТКИ ===")
             self.log("Загружаем файл...")
             
@@ -311,12 +320,12 @@ class OzonUnarchiverApp:
                 self.root.after(0, lambda: messagebox.showinfo("Инфо", "В файле не найдено offer_id."))
                 return
 
-            self.progress['maximum'] = len(offer_ids) + 10
-            self.progress['value'] = 10
+            self.set_progress(maximum=len(offer_ids) + 10)
+            self.set_progress(value=10)
 
             # Получаем информацию о товарах
             products, api_errors = get_products_info(account, offer_ids, self.log)
-            self.progress['value'] = 50
+            self.set_progress(value=50)
 
             if not products and api_errors:
                 self.log("❌ Не удалось получить данные о товарах")
@@ -362,7 +371,7 @@ class OzonUnarchiverApp:
 
                 report_data.append(row_data)
 
-            self.progress['value'] = 70
+            self.set_progress(value=70)
 
             # Восстанавливаем товары
             unarchive_results = []
@@ -377,7 +386,7 @@ class OzonUnarchiverApp:
             else:
                 self.log("Нет товаров для восстановления.")
 
-            self.progress['value'] = 90
+            self.set_progress(value=90)
 
             # Добавляем информацию об отсутствующих товарах
             found_offer_ids = {p.get("offer_id") for p in products}
@@ -397,7 +406,7 @@ class OzonUnarchiverApp:
             out_path = os.path.join(os.path.dirname(self.file_path), "result.xlsx")
             write_report_xlsx(out_path, report_data)
             
-            self.progress['value'] = 100
+            self.set_progress(value=100)
             
             self.log("=== ЗАВЕРШЕНО ===")
             self.log(f"Всего товаров обработано: {len(offer_ids)}")
