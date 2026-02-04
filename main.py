@@ -11,6 +11,7 @@ import time
 
 CONFIG_FILE = "config.json"
 API_BASE = "https://api-seller.ozon.ru"
+APP_VERSION = "1.1"
 
 
 def load_config():
@@ -177,7 +178,7 @@ def unarchive_products(account, product_ids, log_callback):
 class OzonUnarchiverApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Ozon Unarchiver v2.0")
+        self.root.title(f"Ozon Unarchiver v{APP_VERSION}")
         self.root.geometry("700x500")
         self.root.resizable(True, True)
 
