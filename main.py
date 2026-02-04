@@ -27,29 +27,34 @@ def get_headers(account):
 
 
 def read_offer_ids_xlsx(path):
-    wb = load_workbook(path, read_only=True, data_only=True)
-    ws = wb.active
-    # ищем колонку offer_id
-    first_row = [cell.value for cell in ws[1]]
-    headers = [str(h).strip().lower() if h is not None else "" for h in first_row]
-    
-    if "offer_id" in headers:
-        col_idx = headers.index("offer_id") + 1
-        start_row = 2
-    else:
-        col_idx = 1
-        start_row = 1
+    wb = None
+    try:
+        wb = load_workbook(path, read_only=True, data_only=True)
+        ws = wb.active
+        # ищем колонку offer_id
+        first_row = [cell.value for cell in ws[1]]
+        headers = [str(h).strip().lower() if h is not None else "" for h in first_row]
+        
+        if "offer_id" in headers:
+            col_idx = headers.index("offer_id") + 1
+            start_row = 2
+        else:
+            col_idx = 1
+            start_row = 1
 
-    offer_ids = []
-    for row in ws.iter_rows(min_row=start_row, min_col=col_idx, max_col=col_idx, values_only=True):
-        v = row[0]
-        if v is None:
-            continue
-        offer_ids.append(str(v).strip())
-    
-    # Удаляем пустые значения
-    offer_ids = [oid for oid in offer_ids if oid and oid != ""]
-    return offer_ids
+        offer_ids = []
+        for row in ws.iter_rows(min_row=start_row, min_col=col_idx, max_col=col_idx, values_only=True):
+            v = row[0]
+            if v is None:
+                continue
+            offer_ids.append(str(v).strip())
+        
+        # Удаляем пустые значения
+        offer_ids = [oid for oid in offer_ids if oid and oid != ""]
+        return offer_ids
+    finally:
+        if wb is not None:
+            wb.close()
 
 
 def write_report_xlsx(path, rows):
