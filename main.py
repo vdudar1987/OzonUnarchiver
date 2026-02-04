@@ -101,10 +101,13 @@ def get_products_info(account, offer_ids, log_callback):
                 continue
             
             response_data = resp.json()
-            
-            # Исправлено: товары находятся в items, а не в result
-            if "items" in response_data:
-                batch = response_data["items"]
+
+            items = response_data.get("items")
+            if items is None:
+                items = response_data.get("result", {}).get("items")
+
+            if items is not None:
+                batch = items
                 results.extend(batch)
                 log_callback(f"Получено {len(batch)} товаров")
                 # Для отладки - посмотрим структуру первого товара
@@ -112,9 +115,9 @@ def get_products_info(account, offer_ids, log_callback):
                     first_item_keys = list(batch[0].keys())
                     log_callback(f"Ключи первого товара: {first_item_keys}")
             else:
-                log_callback(f"Нет поля 'items' в ответе. Ключи ответа: {list(response_data.keys())}")
-                if "error" in response_data:
-                    errors.append(f"API Error: {response_data['error']}")
+                response_keys = list(response_data.keys())
+                log_callback(f"Нет поля 'items' в ответе. Ключи ответа: {response_keys}")
+                errors.append(f"Нет поля 'items' в ответе. Ключи ответа: {response_keys}")
             
         except requests.exceptions.RequestException as e:
             error_msg = f"Ошибка запроса: {str(e)}"
